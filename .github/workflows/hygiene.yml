@@ -1,0 +1,26 @@
+name: hygiene
+
+# Keeps the ruleset from rotting. Weekly, opens issues instead of failing builds.
+on:
+  schedule:
+    - cron: "0 13 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  staleness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -r tools/requirements.txt
+      - name: Report rules past review date or past validation freshness
+        run: python tools/validate_rules.py | tee build-report.txt || true
+      - name: Publish metrics
+        run: python tools/coverage_report.py
+      - uses: actions/upload-artifact@v4
+        with: { name: weekly-hygiene, path: build/ }

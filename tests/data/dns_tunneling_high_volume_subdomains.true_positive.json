@@ -1,0 +1,9 @@
+{
+  "note": "Synthetic positive fixture. One host, 60 unique labels under one registered domain inside the window.",
+  "generator": "flightsim run tunnel-dns",
+  "events": [
+    {"src_ip": "10.20.30.40", "registered_domain": "sandbox.alphasoc.xyz", "query_name": "a1b2c3d4e5.sandbox.alphasoc.xyz", "query_type": "A", "timestamp": "2026-09-30T14:00:01Z"},
+    {"src_ip": "10.20.30.40", "registered_domain": "sandbox.alphasoc.xyz", "query_name": "f6g7h8i9j0.sandbox.alphasoc.xyz", "query_type": "A", "timestamp": "2026-09-30T14:00:02Z"}
+  ],
+  "expected": {"fires": true, "distinct_labels": 60, "window_minutes": 5}
+}

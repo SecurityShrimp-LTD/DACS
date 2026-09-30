@@ -1,0 +1,64 @@
+# Threatest scenarios for network layer detections.
+#
+# Detonator keys confirmed from the Threatest README: remoteDetonator,
+# stratusRedTeamDetonator, awsCliDetonator. Check schemas/threatest.schema.json
+# in the upstream repo before adding a local detonator block, and wire that
+# schema into your editor for autocompletion.
+#
+# Correlation caveat: flightsim does not emit a Threatest correlation UUID.
+# These assertions bind on signal name plus time window plus the source host,
+# so run them from a dedicated detonation host whose address is not shared with
+# anything else that could trip the same rule.
+scenarios:
+  - name: DNS tunneling detected from egress host
+    detonate:
+      remoteDetonator:
+        commands:
+          - "flightsim run tunnel-dns -fast"
+    expectations:
+      - timeout: 10m
+        datadogSecuritySignal:
+          name: "DNS Tunneling via High Volume Unique Subdomains"
+          severity: high
+
+# Examples for rules this scaffold does not ship. Every active scenario must
+# assert a rule that exists in detections/, or the nightly run fails and files a
+# tuning issue for it every day. Uncomment each one when its rule lands.
+#
+  # - name: DGA resolution detected from egress host
+  #   detonate:
+  #     remoteDetonator:
+  #       commands:
+  #         - "flightsim run dga -fast"
+  #   expectations:
+  #     - timeout: 10m
+  #       datadogSecuritySignal:
+  #         name: "Domain Generation Algorithm Resolution Pattern"
+  #         severity: medium
+
+  # - name: Outbound connection to known C2 destination
+  #   detonate:
+  #     remoteDetonator:
+  #       commands:
+  #         - "flightsim run c2 -fast"
+  #   expectations:
+  #     - timeout: 10m
+  #       datadogSecuritySignal:
+  #         name: "Egress to Known Command and Control Infrastructure"
+  #         severity: critical
+
+  # - name: Cryptomining pool traffic
+  #   detonate:
+  #     remoteDetonator:
+  #       commands:
+  #         - "flightsim run miner -fast"
+  #   expectations:
+  #     - timeout: 10m
+  #       datadogSecuritySignal:
+  #         name: "Stratum Mining Protocol Egress"
+  #         severity: medium
+
+# Deliberately excluded from the scheduled run, enable per exercise only:
+#   scan     trips IPS blocking and can lock out the source host
+#   spambot  outbound SMTP, gets your egress range listed
+#   ssh-exfil / ssh-transfer  large transfers, check bandwidth and DLP posture first

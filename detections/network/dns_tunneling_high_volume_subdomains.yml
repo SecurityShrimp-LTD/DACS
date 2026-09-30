@@ -1,0 +1,88 @@
+# Two documents. The first is the base event selection and never alerts on its
+# own. The second is a Sigma correlation that aggregates it, and is the rule
+# that fires; it carries the rule id and the detection_engineering block.
+title: DNS Queries of Tunnel Capable Record Types
+id: 0d9c1701-9adc-4dc8-98b2-9e8170ee9e06
+name: dns_tunnel_capable_query_types
+status: test
+description: >
+  Base rule for the DNS tunneling correlation. Selects resolver queries for the
+  record types tunneling tools use to carry payload. Does not alert on its own.
+author: Skip Cruse (f8al)
+date: "2026-09-30"
+logsource:
+  category: dns
+  definition: >
+    Requires resolver query logging with client source address and full queried
+    name. Passive DNS at the egress boundary is insufficient because it loses
+    client attribution behind the resolver.
+detection:
+  selection:
+    query_type:
+      - A
+      - AAAA
+      - TXT
+      - "NULL"
+  condition: selection
+---
+title: DNS Tunneling via High Volume Unique Subdomains
+id: 6f1c2a4e-9b07-4d2f-8a31-5c7e0d3b1f88
+status: test
+description: >
+  Detects a single internal host issuing an anomalous count of unique subdomain
+  labels under one registered domain within a short window, the primary traffic
+  signature of DNS tunneling tools such as iodine, dnscat2 and the AlphaSOC
+  flightsim tunnel-dns module.
+references:
+  - https://attack.mitre.org/techniques/T1071/004/
+  - https://github.com/alphasoc/flightsim
+author: Skip Cruse (f8al)
+date: "2026-09-30"
+correlation:
+  type: value_count
+  rules:
+    - dns_tunnel_capable_query_types
+  group-by:
+    - src_ip
+    - registered_domain
+  timespan: 5m
+  condition:
+    gt: 50
+    field: query_name
+falsepositives:
+  - Endpoint security and antivirus vendors that encode reputation lookups into subdomains
+  - Content delivery networks and email security gateways using per message subdomains
+  - Internal telemetry agents performing dynamic service discovery
+level: high
+tags:
+  - attack.command_and_control
+  - attack.t1071.004
+  - attack.exfiltration
+  - attack.t1048.003
+detection_engineering:
+  lifecycle:
+    stage: in_test
+    owner: detection-engineering
+    review_interval_days: 90
+    last_reviewed: "2026-09-30"
+  requirement:
+    source: purple_team
+    issue: "#112"
+    priority_score: 78
+  validation:
+    method: threatest
+    detonation_command: flightsim run tunnel-dns -fast
+    scenario_file: scenarios/network.threatest.yaml
+    last_validated: null
+    evidence: Nightly detonation job, artifact test-results.json
+    known_evasions:
+      - Query rate below the 50 label threshold with a long lived session
+      - Tunneling over DNS over HTTPS, which bypasses the resolver log source entirely
+      - Distributing labels across several registered domains
+  operations:
+    ads: docs/ads/dns-tunneling.md
+    runbook: docs/runbooks/dns-tunneling.md
+    response_action: ticket
+    volume_budget_per_week: 5
+    suppression:
+      - Allow list of vendor reputation domains maintained in lookups/dns_allowlist.csv

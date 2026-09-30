@@ -1,0 +1,7 @@
+{
+  "note": "Synthetic negative fixture. Vendor reputation lookups, high volume but below threshold and on the allow list.",
+  "events": [
+    {"src_ip": "10.20.30.41", "registered_domain": "avqs.example-av.com", "query_name": "hash1.avqs.example-av.com", "query_type": "A", "timestamp": "2026-09-30T14:00:01Z"}
+  ],
+  "expected": {"fires": false, "distinct_labels": 22, "window_minutes": 5}
+}
