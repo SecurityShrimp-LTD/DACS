@@ -1,4 +1,4 @@
-# Detection as Code framework
+# Detection as Code Scaffold
 
 A reusable, platform neutral scaffold for running a detection engineering
 program on GitHub. It implements the six phase detection engineering lifecycle
