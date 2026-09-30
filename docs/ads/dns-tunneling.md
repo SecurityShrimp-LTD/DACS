@@ -19,12 +19,14 @@ Secondary: Exfiltration / Exfiltration Over Alternative Protocol: DNS (T1048.003
 
 ## 3. Strategy Abstract
 
-Resolver query logs are aggregated over a five minute sliding window. For each
+Resolver query logs are aggregated over fixed five minute windows. For each
 source address and registered domain pair, distinct fully qualified query names
 are counted. When the count exceeds 50, an alert is raised. Registered domain is
 derived by public suffix list lookup so that per customer subdomains of a shared
-provider do not collapse into one key. Domains on the vendor allow list are
-excluded before counting.
+provider do not collapse into one key. Domains on the vendor allow list,
+lookups/dns_allowlist.csv, are excluded before counting. Sigma has no lookup
+construct, so the exclusion is applied on the platform when the rule is
+deployed.
 
 ## 4. Technical Context
 
@@ -51,6 +53,10 @@ query and loses the attribution this detection depends on.
   this outright. Low and slow tunneling is a known miss.
 - Spreading labels across several registered domains splits the count across keys
   and evades the grouping.
+- Windows are fixed, not sliding: the Splunk conversion bins on five minute
+  boundaries. A burst that straddles a boundary is split across two windows, so
+  up to twice the threshold can pass unseen. A platform that supports sliding
+  windows closes this gap.
 - Assumes public suffix list resolution is current. A newly delegated suffix can
   cause undercounting.
 - No coverage for tunneling over protocols other than DNS.

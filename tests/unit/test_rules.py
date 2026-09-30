@@ -11,6 +11,10 @@ stage in_test onward. Fixtures are named after the rule file:
   detections/network/foo_bar.yml
   tests/data/foo_bar.true_positive.json
   tests/data/foo_bar.true_negative.json
+
+For a threshold rule, expected.count is the aggregated value the fixture
+produces: the distinct value count for value_count, the event count for
+event_count.
 """
 import json
 import pathlib
@@ -64,5 +68,5 @@ def test_threshold_matches_fixture_expectations(rule_path):
 
     tp = json.loads(fx["tp"].read_text())
     tn = json.loads(fx["tn"].read_text())
-    assert tp["expected"]["distinct_labels"] > threshold, "positive fixture does not exceed the threshold"
-    assert tn["expected"]["distinct_labels"] <= threshold, "negative fixture would fire, the rule is too loose"
+    assert tp["expected"]["count"] > threshold, "positive fixture does not exceed the threshold"
+    assert tn["expected"]["count"] <= threshold, "negative fixture would fire, the rule is too loose"

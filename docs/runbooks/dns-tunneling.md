@@ -32,8 +32,9 @@ names, which is how DNS tunneling both exfiltrates and receives commands.
 - The registered domain belongs to a deployed security or email product and the
   querying process matches that product.
 - The source is the authorized vulnerability scanner performing enumeration.
-- The activity traces to a detonation run from the detonation host. Check the run
-  marker in the process command line before assuming this.
+- The activity traces to a detonation run from the detonation host. Confirm the
+  querying process has a parent whose name contains the Threatest detonation
+  UUID before assuming this.
 
 ## Escalate when
 

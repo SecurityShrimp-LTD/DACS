@@ -5,5 +5,5 @@
     {"src_ip": "10.20.30.40", "registered_domain": "sandbox.alphasoc.xyz", "query_name": "a1b2c3d4e5.sandbox.alphasoc.xyz", "query_type": "A", "timestamp": "2026-09-30T14:00:01Z"},
     {"src_ip": "10.20.30.40", "registered_domain": "sandbox.alphasoc.xyz", "query_name": "f6g7h8i9j0.sandbox.alphasoc.xyz", "query_type": "A", "timestamp": "2026-09-30T14:00:02Z"}
   ],
-  "expected": {"fires": true, "distinct_labels": 60, "window_minutes": 5}
+  "expected": {"fires": true, "count": 60, "window_minutes": 5}
 }

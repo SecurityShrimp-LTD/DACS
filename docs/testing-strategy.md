@@ -36,7 +36,8 @@ A rule must pass every tier below the one it claims.
    IPS blocking and lock out the detonation host, spambot can get the egress
    range listed.
 4. tunnel-icmp requires superuser privileges on the detonation host.
-5. Every scheduled run is announced to the SOC with the run marker, so a
+5. Every scheduled run is announced to the SOC with the detonation host and the
+   Threatest detonation UUID in the parent process, so a
    detonation is never mistaken for an incident. Unannounced detonation is a
    purple team exercise, which is a different activity with a different approval.
 
@@ -64,6 +65,8 @@ which is what keeps assertions from passing on unrelated alerts of the same name
 flightsim does not do this. When flightsim is used as the detonator, the
 assertion binds on signal name plus time window plus source address, so the
 detonation host must not share its address with anything else that could trip
-the same rule. The nightly workflow wraps flightsim in a parent process carrying
-a run marker so the SIEM has something to correlate against, which is the same
-approach the Threatest SSH detonator uses.
+the same rule. The nightly workflow runs flightsim only through the Threatest
+remote detonator, which executes it on the detonation host under a parent
+process containing the detonation UUID. Endpoint telemetry on that host can
+correlate against the UUID; resolver and network logs cannot, which is why the
+address rule above still applies.

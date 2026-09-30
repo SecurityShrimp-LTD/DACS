@@ -20,9 +20,6 @@ on:
       scenario:
         description: Scenario file to run
         default: scenarios/network.threatest.yaml
-      flightsim_modules:
-        description: Space separated flightsim modules, empty for none
-        default: "tunnel-dns dga c2"
 
 permissions:
   contents: write        # push the stamp branch
@@ -42,32 +39,23 @@ jobs:
           # trigger the validate workflow, so its required checks never report.
           token: ${{ secrets.STAMP_PR_TOKEN || github.token }}
 
-      - name: Record the run marker
-        id: marker
-        run: echo "run_id=deng-$(date -u +%Y%m%dT%H%M%SZ)-${{ github.run_id }}" >> "$GITHUB_OUTPUT"
-
-      # flightsim carries no correlation identifier of its own. Wrapping it in a
-      # parent process whose command line contains the run marker gives the SIEM
-      # something to bind the alert to, the same trick the Threatest SSH
-      # detonator uses.
-      - name: Network detonation via flightsim
-        if: inputs.flightsim_modules != ''
-        run: |
-          set -euo pipefail
-          for m in ${{ inputs.flightsim_modules }}; do
-            echo "::group::flightsim $m"
-            bash -c 'echo marker=${{ steps.marker.outputs.run_id }} module='"$m"'; flightsim run '"$m"' -fast'
-            echo "::endgroup::"
-          done
-
-      - name: End to end assertion via Threatest
+      # Threatest detonates each scenario on DETONATION_HOST over SSH through its
+      # remoteDetonator, which runs flightsim there. flightsim is never run on
+      # the runner itself: a second detonation from another address in the same
+      # window would muddy the host and time binding the assertions rely on.
+      # SSH authenticates with the runner's agent or default key; add
+      # --ssh-keyfile to both commands to use a specific one.
+      - name: Detonate and assert via Threatest
         run: |
           mkdir -p build
-          threatest lint ${{ inputs.scenario || 'scenarios/network.threatest.yaml' }}
-          threatest run ${{ inputs.scenario || 'scenarios/network.threatest.yaml' }} \
+          threatest lint "$SCENARIO"
+          threatest run "$SCENARIO" \
             --output build/test-results.json \
             --parallelism 3
         env:
+          # Passed through the environment, not interpolated into the script,
+          # so a dispatch input cannot inject shell.
+          SCENARIO: ${{ inputs.scenario || 'scenarios/network.threatest.yaml' }}
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
           DD_APP_KEY: ${{ secrets.DD_APP_KEY }}
           THREATEST_SSH_HOST: ${{ vars.DETONATION_HOST }}

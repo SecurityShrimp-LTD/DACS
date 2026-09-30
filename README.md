@@ -32,6 +32,7 @@ docs/standards/                 Detection standard, triage rubric, definition of
 docs/testing-strategy.md        The six testing tiers and detonation safety rules
 scenarios/*.threatest.yaml      End to end assertions
 tests/unit, tests/data          Fixture replay, one positive and one negative per rule
+lookups/                        Allow lists and other reference data the platform applies at deploy time
 tools/                          Validation, coverage metrics, validation stamping, deployment
 .github/workflows/              validate, detonate-nightly, deploy, hygiene
 ```
