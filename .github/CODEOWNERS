@@ -1,6 +1,6 @@
 # Two reviewer rule for anything that ships to production.
-*                       @SecurityShrimp-LTD/detection-engineering
-/detections/            @SecurityShrimp-LTD/detection-engineering @SecurityShrimp-LTD/soc-leads
-/schema/                @SecurityShrimp-LTD/detection-engineering-leads
-/docs/standards/        @SecurityShrimp-LTD/detection-engineering-leads
-/.github/workflows/     @SecurityShrimp-LTD/detection-engineering-leads
+*                       @your-org/detection-engineering
+/detections/            @your-org/detection-engineering @your-org/soc-leads
+/schema/                @your-org/detection-engineering-leads
+/docs/standards/        @your-org/detection-engineering-leads
+/.github/workflows/     @your-org/detection-engineering-leads
